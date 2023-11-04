@@ -50,7 +50,7 @@ dev_dependencies:
     sdk: flutter
   flutter_launcher_icons:
   test:
-  mockito:
+  mocktail:
   faker:
 
   # The "flutter_lints" package below contains a set of recommended lints to
