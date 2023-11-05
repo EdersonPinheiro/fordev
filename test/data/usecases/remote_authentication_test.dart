@@ -30,12 +30,32 @@ void main() {
   });
 
   test('Should call HttpClient with correct values', () async {
+    when(() =>
+        httpClient.request(
+            url: any(named: 'url'),
+            method: any(named: 'method'),
+            body: any(named: 'body'))).thenAnswer(
+        (_) async => {'acessToken': faker.guid.guid(), 'name': faker.person.name()});
     await sut.auth(params);
 
     verify(() => httpClient.request(
         url: url,
         method: 'post',
         body: {'email': params.email, 'password': params.password}));
+  });
+
+  test('Should return an Account if HttpClient returns 200', () async {
+    final acessToken = faker.guid.guid();
+    when(() =>
+        httpClient.request(
+            url: any(named: 'url'),
+            method: any(named: 'method'),
+            body: any(named: 'body'))).thenAnswer(
+        (_) async => {'acessToken': acessToken, 'name': faker.person.name()});
+
+    final account = await sut.auth(params);
+
+    expect(account.token, acessToken);
   });
 
   test('Should throw UnexpectedError if HttpClient returns 400', () async {
@@ -45,8 +65,19 @@ void main() {
         body: any(named: 'body'))).thenThrow(HttpError.badRequest);
 
     final future = sut.auth(params);
- 
+
     expect(future, throwsA(DomainError.unexpected));
+  });
+
+  test('Should throw UnexpectedError if HttpClient returns 401', () async {
+    when(() => httpClient.request(
+        url: any(named: 'url'),
+        method: any(named: 'method'),
+        body: any(named: 'body'))).thenThrow(HttpError.unauthorized);
+
+    final future = sut.auth(params);
+
+    expect(future, throwsA(DomainError.invalidCredentials));
   });
 
   test('Should throw UnexpectedError if HttpClient returns 404', () async {
@@ -54,6 +85,17 @@ void main() {
         url: any(named: 'url'),
         method: any(named: 'method'),
         body: any(named: 'body'))).thenThrow(HttpError.notFound);
+
+    final future = sut.auth(params);
+
+    expect(future, throwsA(DomainError.unexpected));
+  });
+
+  test('Should throw UnexpectedError if HttpClient returns 500', () async {
+    when(() => httpClient.request(
+        url: any(named: 'url'),
+        method: any(named: 'method'),
+        body: any(named: 'body'))).thenThrow(HttpError.serverError);
 
     final future = sut.auth(params);
 
