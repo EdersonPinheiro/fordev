@@ -25,8 +25,7 @@ void main() {
       body: any(named: 'body')));
 
   void mockHttpData(Map data) {
-    mockRequest().thenAnswer((_) async =>
-        {'acessToken': faker.guid.guid(), 'name': faker.person.name()});
+    mockRequest().thenAnswer((_) async => data);
   }
 
   void mockHttpError(HttpError error) {
